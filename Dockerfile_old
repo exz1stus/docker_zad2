@@ -1,0 +1,42 @@
+# ETAP 1: building
+FROM golang:1.22-alpine AS builder
+
+# Informacja o autorze zgodnie ze standardem OCI
+LABEL org.opencontainers.image.authors="Denys Petrov"
+
+RUN apk add --no-cache upx
+
+WORKDIR /app
+
+COPY go.mod main.go ./
+RUN go mod download
+
+# Kompilacja do statycznego pliku binarnego (CGO_ENABLED=0 usuwa zależności od bibliotek C) 
+#-ldflags="-s -w" usuwa symbole debugowania
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -a -installsuffix cgo -o weather-app .
+
+# uzywamy upx do tworzenia samorozpakującego pliku executable 
+RUN upx --best weather-app
+
+# Zmieniamy uprawnienia tutaj, ponieważ scratch nie posiada chmod'a, a uprawnienia są zachowane w metadate pliku przy kopiowaniu
+RUN chmod +x weather-app
+
+# ETAP 2: final stage
+FROM scratch
+
+COPY --from=builder /app/weather-app /weather-app
+COPY data.json /data.json
+
+# Kopiowanie certyfikatów CA (niezbędne, jeśli aplikacja łączy się z zewnętrznym API przez HTTPS)
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+LABEL org.opencontainers.image.authors="Denys Petrov"
+
+# Wykorzystujemy aplikację dla sprawdzenia
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD ["/weather-app", "health"]
+
+EXPOSE 8080
+
+# Entry point, bo aplikacja nie wymaga argumentów
+ENTRYPOINT ["/weather-app"]
