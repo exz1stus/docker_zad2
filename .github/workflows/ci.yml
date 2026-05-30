@@ -13,10 +13,6 @@ env:
 jobs:
     build-and-test:
         runs-on: ubuntu-latest
-        permissions:
-            content: read
-            packages: write
-
         steps:
             - name: Checkout repo
               uses: actions/checkout@v6
@@ -67,8 +63,8 @@ jobs:
                   context: .
                   platforms: linux/amd64,linux/arm64
                   push: true
-                  tags: ${{ id.meta.outputs.tags }}
-                  labels: ${{ id.meta.outputs.labels }}
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
                   # Konfiguracja cache typu registry w trybie max
                   cache-from: type=registry,ref=${{ env.REGISTRY_DOCKERHUB }}/${{ env.CACHE_IMAGE_NAME }}:cache
                   cache-to: type=registry,ref=${{ env.REGISTRY_DOCKERHUB }}/${{ env.CACHE_IMAGE_NAME }}:cache,mode=max
