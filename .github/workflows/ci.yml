@@ -7,8 +7,8 @@ on:
         tags: ["v*"]
 
 env:
-    IMAGE_NAME: ${{ github.repository_owner }}/docker_zad2
-    CACHE_IMAGE_NAME: ${{ github.repository_owner }}/docker_zad2-cache
+    IMAGE_NAME: docker_zad2
+    CACHE_IMAGE_NAME: docker_zad2-cache
     REGISTRY_DOCKERHUB: docker.io
     REGISTRY_GHCR: ghcr.io
 
@@ -42,7 +42,7 @@ jobs:
               id: meta
               uses: docker/metadata-action@v6
               with:
-                  images: ${{ env.REGISTRY_GHCR }}/${{ env.IMAGE_NAME }}
+                  images: ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
                   tags: |
                       type=semver,pattern={{version}}
                       type=sha,format=short
@@ -55,7 +55,7 @@ jobs:
                   context: .
                   load: true # Ładuje obraz do lokalnego demona Dockera zamiast wysyłać do rejestru
                   tags: myapp:test
-                  cache-from: type=registry,ref=${{ env.REGISTRY_DOCKERHUB }}/${{ env.CACHE_IMAGE_NAME }}:cache
+                  cache-from: type=registry,ref=${{ env.REGISTRY_DOCKERHUB }}/${{ vars.DOCKERHUB_USERNAME }}/${{ env.CACHE_IMAGE_NAME }}:cache
 
             - name: Run Trivy vulnerability scanner
               uses: aquasecurity/trivy-action@master
@@ -75,5 +75,5 @@ jobs:
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
                   # Konfiguracja cache typu registry w trybie max
-                  cache-from: type=registry,ref=${{ env.REGISTRY_DOCKERHUB }}/${{ env.CACHE_IMAGE_NAME }}:cache
-                  cache-to: type=registry,ref=${{ env.REGISTRY_DOCKERHUB }}/${{ env.CACHE_IMAGE_NAME }}:cache,mode=max
+                  cache-from: type=registry,ref=${{ env.REGISTRY_DOCKERHUB }}/${{ vars.DOCKERHUB_USERNAME }}/${{ env.CACHE_IMAGE_NAME }}:cache
+                  cache-to: type=registry,ref=${{ env.REGISTRY_DOCKERHUB }}/${{ vars.DOCKERHUB_USERNAME }}/${{ env.CACHE_IMAGE_NAME }}:cache,mode=max
