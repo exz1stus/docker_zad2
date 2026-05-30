@@ -3,7 +3,7 @@ name: Zadanie 2
 on:
     push:
         branches: ["main"]
-        tags: ["v*.*.*"]
+        tags: ["v*"]
 
 env:
     IMAGE_NAME: ${{ github.repository_owner }}/docker_zad2
