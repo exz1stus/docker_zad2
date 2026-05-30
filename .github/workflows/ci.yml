@@ -3,7 +3,7 @@ name: Zadanie 2
 on:
     workflow_dispatch:
     push:
-        branches: ["main"]
+        branches: ["master"]
         tags: ["v*"]
 
 env:
